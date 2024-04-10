@@ -75,7 +75,7 @@ class App extends Component {
             onImageClick={this.showImage}
           />
           {this.state.isLoading && <Loader />}
-          {this.state.loadMore && (
+          {!this.state.isLoading && this.state.loadMore && (
             <Button onClick={this.loadMore}>Load more</Button>
           )}
           {this.state.showImage && (
