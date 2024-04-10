@@ -1,4 +1,17 @@
 @import-normalize; /* bring in normalize.css styles */
+@import 'reset.css'; /* bring in custom reset styles */
+
+html {
+  box-sizing: border-box;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
 
 body {
   margin: 0;
@@ -7,9 +20,28 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.2;
+  background: #f0f0f0;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.gallery {
+}
+
+#root {
+  text-align: left;
+  padding: 0px 20px;
+}
+
+h1,
+h2 {
+  padding: 10px;
 }
