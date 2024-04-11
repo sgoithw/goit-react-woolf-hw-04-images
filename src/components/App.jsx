@@ -20,6 +20,7 @@ class App extends Component {
     },
     isLoading: false,
     showImage: null,
+    error: null,
   };
 
   componentDidMount() {
@@ -42,25 +43,32 @@ class App extends Component {
     this.setState({
       isLoading: true,
       images: page === 1 ? [] : this.state.images,
+      loadMore: false,
+      error: null,
     });
 
-    const {
-      data: { hits: images, totalHits },
-    } = await searchImages({
-      query,
-      page,
-      per_page: this.state.perPage,
-    });
-
-    this.setState(prevState => ({
-      images: [...prevState.images, ...images],
-      loadMore: totalHits >= page * this.state.perPage,
-      isLoading: false,
-      currentQuery: {
+    try {
+      const {
+        data: { hits: images, totalHits },
+      } = await searchImages({
         query,
         page,
-      },
-    }));
+        per_page: this.state.perPage,
+      });
+
+      this.setState(prevState => ({
+        images: [...prevState.images, ...images],
+        loadMore: totalHits >= page * this.state.perPage,
+        isLoading: false,
+        currentQuery: {
+          query,
+          page,
+        },
+      }));
+    } catch (error) {
+      console.log('error', error);
+      this.setState({ error: error.message, isLoading: false });
+    }
   };
 
   showImage = image => {
@@ -112,6 +120,7 @@ class App extends Component {
             />
           )}
         </section>
+        {this.state.error && <p>{this.state.error}</p>}
       </>
     );
   }
