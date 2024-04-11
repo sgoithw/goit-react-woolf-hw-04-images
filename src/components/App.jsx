@@ -14,13 +14,26 @@ class App extends Component {
     images: [],
     loadMore: false,
     perPage: 12,
-    currentQuery: {},
+    currentQuery: {
+      query: '',
+      page: 1,
+    },
     isLoading: false,
     showImage: null,
   };
 
   componentDidMount() {
     this.loadImages({ query: '' });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      prevState.currentQuery.query !== this.state.currentQuery.query ||
+      prevState.currentQuery.page !== this.state.currentQuery.page ||
+      prevState.currentQuery.perPage !== this.state.currentQuery.perPage
+    ) {
+      this.loadImages(this.state.currentQuery);
+    }
   }
 
   loadImages = async ({ query, page = 1 }) => {
@@ -59,16 +72,29 @@ class App extends Component {
   };
 
   loadMore = () => {
-    this.loadImages({
-      ...this.state.currentQuery,
-      page: this.state.currentQuery.page + 1,
+    this.setState({
+      currentQuery: {
+        ...this.state.currentQuery,
+        page: this.state.currentQuery.page + 1,
+      },
+    });
+  };
+
+  handleFormSubmit = ({ query }) => {
+    if (this.state.currentQuery.query === query) return;
+
+    this.setState({
+      currentQuery: {
+        query,
+        page: 1,
+      },
     });
   };
 
   render() {
     return (
       <>
-        <Searchbar onSubmit={this.loadImages} />
+        <Searchbar onSubmit={this.handleFormSubmit} />
         <section className={styles.gallery}>
           <ImageGallery
             images={this.state.images}

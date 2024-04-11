@@ -5,6 +5,7 @@ const ImageGallery = ({ images, onImageClick }) => (
   <ul className={styles.gallery}>
     {images.map(({ id, webformatURL, tags, largeImageURL }) => (
       <ImageGalleryItem
+        key={id}
         src={webformatURL}
         alt={tags}
         onImageClick={() => onImageClick({ id, largeImageURL, tags })}
