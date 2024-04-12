@@ -14,35 +14,28 @@ class App extends Component {
     images: [],
     loadMore: false,
     perPage: 12,
-    currentQuery: {
-      query: '',
-      page: 1,
-    },
+    query: '',
+    page: 1,
     isLoading: false,
     showImage: null,
     error: null,
   };
 
-  componentDidMount() {
-    this.loadImages({ query: '' });
-  }
-
   componentDidUpdate(prevProps, prevState) {
     if (
-      prevState.currentQuery.query !== this.state.currentQuery.query ||
-      prevState.currentQuery.page !== this.state.currentQuery.page ||
-      prevState.currentQuery.perPage !== this.state.currentQuery.perPage
+      prevState.query !== this.state.query ||
+      prevState.page !== this.state.page
     ) {
-      this.loadImages(this.state.currentQuery);
+      this.loadImages({
+        query: this.state.query,
+        page: this.state.page,
+      });
     }
   }
 
   loadImages = async ({ query, page = 1 }) => {
-    if (this.state.isLoading) return;
-
     this.setState({
       isLoading: true,
-      images: page === 1 ? [] : this.state.images,
       loadMore: false,
       error: null,
     });
@@ -59,15 +52,12 @@ class App extends Component {
       this.setState(prevState => ({
         images: [...prevState.images, ...images],
         loadMore: totalHits >= page * this.state.perPage,
-        isLoading: false,
-        currentQuery: {
-          query,
-          page,
-        },
       }));
     } catch (error) {
       console.log('error', error);
-      this.setState({ error: error.message, isLoading: false });
+      this.setState({ error: error.message });
+    } finally {
+      this.setState({ isLoading: false });
     }
   };
 
@@ -81,21 +71,17 @@ class App extends Component {
 
   loadMore = () => {
     this.setState({
-      currentQuery: {
-        ...this.state.currentQuery,
-        page: this.state.currentQuery.page + 1,
-      },
+      page: this.state.page + 1,
     });
   };
 
   handleFormSubmit = ({ query }) => {
-    if (this.state.currentQuery.query === query) return;
+    if (this.state.query === query) return;
 
     this.setState({
-      currentQuery: {
-        query,
-        page: 1,
-      },
+      query,
+      page: 1,
+      images: [],
     });
   };
 
