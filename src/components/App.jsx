@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { searchImages } from '../services/pixabayApi';
 
 import styles from './App.module.css';
@@ -9,107 +9,86 @@ import Loader from './Loader/Loader';
 import Button from './Button/Button';
 import Modal from './Modal/Modal';
 
-class App extends Component {
-  state = {
-    images: [],
-    loadMore: false,
-    perPage: 12,
-    query: '',
-    page: 1,
-    isLoading: false,
-    showImage: null,
-    error: null,
-  };
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [loadMore, setLoadMore] = useState(false);
+  const [perPage] = useState(12);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showImage, setShowImage] = useState(null);
+  const [error, setError] = useState(null);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.loadImages({
-        query: this.state.query,
-        page: this.state.page,
-      });
+  useEffect(() => {
+    const loadImages = async () => {
+      setIsLoading(true);
+      setLoadMore(false);
+      setError(null);
+
+      try {
+        const {
+          data: { hits: newImages, totalHits },
+        } = await searchImages({
+          query,
+          page,
+          per_page: perPage,
+        });
+
+        setImages(prevImages => [...prevImages, ...newImages]);
+        setLoadMore(totalHits >= page * perPage);
+      } catch (error) {
+        console.log('error', error);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (query && (page === 1 || page > 1)) {
+      loadImages();
     }
-  }
+  }, [query, page, perPage]);
 
-  loadImages = async ({ query, page = 1 }) => {
-    this.setState({
-      isLoading: true,
-      loadMore: false,
-      error: null,
-    });
+  const handleFormSubmit = newQuery => {
+    if (query === newQuery) return;
 
-    try {
-      const {
-        data: { hits: images, totalHits },
-      } = await searchImages({
-        query,
-        page,
-        per_page: this.state.perPage,
-      });
-
-      this.setState(prevState => ({
-        images: [...prevState.images, ...images],
-        loadMore: totalHits >= page * this.state.perPage,
-      }));
-    } catch (error) {
-      console.log('error', error);
-      this.setState({ error: error.message });
-    } finally {
-      this.setState({ isLoading: false });
-    }
+    setQuery(newQuery);
+    setPage(1);
+    setImages([]);
   };
 
-  showImage = image => {
-    this.setState({ showImage: image });
+  const handleImageClick = image => {
+    setShowImage(image);
   };
 
-  closeModal = () => {
-    this.setState({ showImage: null });
+  const closeModal = () => {
+    setShowImage(null);
   };
 
-  loadMore = () => {
-    this.setState({
-      page: this.state.page + 1,
-    });
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  handleFormSubmit = ({ query }) => {
-    if (this.state.query === query) return;
-
-    this.setState({
-      query,
-      page: 1,
-      images: [],
-    });
-  };
-
-  render() {
-    return (
-      <>
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        <section className={styles.gallery}>
-          <ImageGallery
-            images={this.state.images}
-            onImageClick={this.showImage}
+  return (
+    <>
+      <Searchbar onSubmit={handleFormSubmit} />
+      <section className={styles.gallery}>
+        <ImageGallery images={images} onImageClick={handleImageClick} />
+        {isLoading && <Loader />}
+        {!isLoading && loadMore && (
+          <Button onClick={handleLoadMore}>Load more</Button>
+        )}
+        {showImage && (
+          <Modal
+            onClose={closeModal}
+            src={showImage.largeImageURL}
+            alt={showImage.tags}
           />
-          {this.state.isLoading && <Loader />}
-          {!this.state.isLoading && this.state.loadMore && (
-            <Button onClick={this.loadMore}>Load more</Button>
-          )}
-          {this.state.showImage && (
-            <Modal
-              onClose={this.closeModal}
-              src={this.state.showImage.largeImageURL}
-              alt={this.state.showImage.tags}
-            />
-          )}
-        </section>
-        {this.state.error && <p>{this.state.error}</p>}
-      </>
-    );
-  }
-}
+        )}
+      </section>
+      {error && <p>{error}</p>}
+    </>
+  );
+};
 
 export default App;
