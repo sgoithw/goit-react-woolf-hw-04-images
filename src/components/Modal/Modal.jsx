@@ -13,7 +13,7 @@ const Modal = ({ onClose, src, alt }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [onClose]);
 
   const handleClose = event => {
     if (event.currentTarget === event.target) {
