@@ -3,17 +3,17 @@ import styles from './Modal.module.css';
 
 const Modal = ({ onClose, src, alt }) => {
   useEffect(() => {
+    const handleKeyDown = event => {
+      if (event.code === 'Escape') {
+        onClose();
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-
-  const handleKeyDown = event => {
-    if (event.code === 'Escape') {
-      onClose();
-    }
-  };
 
   const handleClose = event => {
     if (event.currentTarget === event.target) {
